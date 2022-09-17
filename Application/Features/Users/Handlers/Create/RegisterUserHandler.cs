@@ -1,6 +1,7 @@
 ﻿using Application.DTOs.AuthenticateDto;
 using Application.DTOs.ResultDto;
 using Application.Features.Users.Commands.Create;
+using AutoMapper;
 using Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
@@ -15,11 +16,14 @@ namespace Application.Features.Users.Handlers.Create
     {
         private readonly UserManager<AppUsers> _userManager;
         private readonly RoleManager<AppRoles> _roleManager;
+        private readonly IMapper _mapper;
 
-        public RegisterUserHandler(UserManager<AppUsers> userManager, RoleManager<AppRoles> roleManager)
+        public RegisterUserHandler(UserManager<AppUsers> userManager, RoleManager<AppRoles> roleManager,
+            IMapper mapper)
         {
             _userManager = userManager;
             _roleManager = roleManager;
+            _mapper = mapper;
         }
 
         public async Task<HandlerResult<RegisterResponse>> Handle(RegisterUserCommand request, CancellationToken cancellationToken)
@@ -66,11 +70,9 @@ namespace Application.Features.Users.Handlers.Create
                 return new HandlerResult<RegisterResponse>().Failed(message);
             }
 
-            return new HandlerResult<RegisterResponse>().Successed(Constant.Message.CREATED_SUCCESSES, new RegisterResponse
-            {
-                UserId = user.Id,
-                Username = user.UserName
-            });
+            var mapperRegisterResponse = _mapper.Map<RegisterResponse>(user);
+
+            return new HandlerResult<RegisterResponse>().Successed(Constant.Message.CREATED_SUCCESSES, mapperRegisterResponse);
         }
     }
 }

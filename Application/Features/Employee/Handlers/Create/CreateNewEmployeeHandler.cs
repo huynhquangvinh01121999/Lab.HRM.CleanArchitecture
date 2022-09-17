@@ -1,6 +1,7 @@
 ﻿using Application.DTOs.EmployeeDto;
 using Application.DTOs.ResultDto;
 using Application.Features.Employee.Commands.Create;
+using AutoMapper;
 using Domain.Entities;
 using Domain.IRepositories;
 using MediatR;
@@ -20,16 +21,18 @@ namespace Application.Features.Employee.Handlers.Create
         private readonly IDepartmentRepository _departmentRepository;
         private readonly ITitleNameRepository _titleNameRepository;
         private readonly IConfiguration _configuration;
+        private readonly IMapper _mapper;
 
         public CreateNewEmployeeHandler(IEmployeeRepository employeeRepository, IModeRepository modeRepository,
                                         IDepartmentRepository departmentRepository, ITitleNameRepository titleNameRepository,
-                                        IConfiguration configuration)
+                                        IConfiguration configuration, IMapper mapper)
         {
             _employeeRepository = employeeRepository;
             _modeRepository = modeRepository;
             _departmentRepository = departmentRepository;
             _titleNameRepository = titleNameRepository;
             _configuration = configuration;
+            _mapper = mapper;
         }
 
         public async Task<HandlerResult<EmployeeResponse>> Handle(CreateNewEmployee request, CancellationToken cancellationToken)
@@ -66,18 +69,8 @@ namespace Application.Features.Employee.Handlers.Create
                 }
 
                 // mapping dto to entity
-                var employee = new Employees
-                {
-                    FullName = request.EmployeeInfo.FullName,
-                    DoB = request.EmployeeInfo.DoB,
-                    PoB = request.EmployeeInfo.PoB,
-                    PhoneNumber = request.EmployeeInfo.PhoneNumber,
-                    Email = request.EmployeeInfo.Email,
-                    TitleId = request.EmployeeInfo.TitleId,
-                    DepartmentId = request.EmployeeInfo.DepartmentId,
-                    ModeId = request.EmployeeInfo.ModeId,
-                    ImagePath = path
-                };
+                var employee = _mapper.Map<Employees>(request.EmployeeInfo);
+                employee.ImagePath = path;
 
                 var result = await _employeeRepository.CreateAsync(employee);
 
@@ -87,20 +80,13 @@ namespace Application.Features.Employee.Handlers.Create
                     var title = await _titleNameRepository.GetByIdAsync(employee.TitleId);
                     var mode = await _modeRepository.GetByIdAsync(employee.ModeId);
 
-                    return new HandlerResult<EmployeeResponse>().Successed(Constant.Message.CREATED_SUCCESSES,
-                        new EmployeeResponse
-                        {
-                            Id = employee.Id,
-                            FullName = request.EmployeeInfo.FullName,
-                            DoB = request.EmployeeInfo.DoB,
-                            PoB = request.EmployeeInfo.PoB,
-                            PhoneNumber = request.EmployeeInfo.PhoneNumber,
-                            Email = request.EmployeeInfo.Email,
-                            TName = title.TName,
-                            DName = department.DName,
-                            MName = mode.Value,
-                            Path = path
-                        });
+                    // mapper from entity to response model
+                    var employeeResponse = _mapper.Map<EmployeeResponse>(employee);
+                    employeeResponse.TName = title.TName;
+                    employeeResponse.DName = department.DName;
+                    employeeResponse.MName = mode.Value;
+
+                    return new HandlerResult<EmployeeResponse>().Successed(Constant.Message.CREATED_SUCCESSES, employeeResponse);
                 }
 
                 return new HandlerResult<EmployeeResponse>().Failed(Constant.Message.FAILURE);

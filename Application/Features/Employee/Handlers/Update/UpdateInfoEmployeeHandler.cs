@@ -1,6 +1,7 @@
 ﻿using Application.DTOs.EmployeeDto;
 using Application.DTOs.ResultDto;
 using Application.Features.Employee.Commands.Update;
+using AutoMapper;
 using Domain.IRepositories;
 using MediatR;
 using System;
@@ -17,14 +18,17 @@ namespace Application.Features.Employee.Handlers.Update
         private readonly IModeRepository _modeRepository;
         private readonly IDepartmentRepository _departmentRepository;
         private readonly ITitleNameRepository _titleNameRepository;
+        private readonly IMapper _mapper;
 
         public UpdateInfoEmployeeHandler(IEmployeeRepository employeeRepository, IModeRepository modeRepository,
-                                        IDepartmentRepository departmentRepository, ITitleNameRepository titleNameRepository)
+                                        IDepartmentRepository departmentRepository, ITitleNameRepository titleNameRepository,
+                                        IMapper mapper)
         {
             _employeeRepository = employeeRepository;
             _modeRepository = modeRepository;
             _departmentRepository = departmentRepository;
             _titleNameRepository = titleNameRepository;
+            _mapper = mapper;
         }
 
         public async Task<HandlerResult<EmployeeResponse>> Handle(UpdateInfoEmployee request, CancellationToken cancellationToken)
@@ -83,20 +87,14 @@ namespace Application.Features.Employee.Handlers.Update
                     var _title = await _titleNameRepository.GetByIdAsync(employee.TitleId);
                     var _mode = await _modeRepository.GetByIdAsync(employee.ModeId);
 
-                    return new HandlerResult<EmployeeResponse>().Successed(Constant.Message.UPDATE_SUCCESSES,
-                        new EmployeeResponse   // mapping model
-                        {
-                            Id = employee.Id,
-                            FullName = employee.FullName,
-                            DoB = employee.DoB,
-                            PoB = employee.PoB,
-                            Email = employee.Email,
-                            PhoneNumber = employee.PhoneNumber,
-                            TName = _title.TName,
-                            DName = _department.DName,
-                            MName = _mode.MName,
-                            Path = path
-                        });
+                    // mapper from entity to response model
+                    var employeeResponse = _mapper.Map<EmployeeResponse>(employee);
+                    employeeResponse.TName = _title.TName;
+                    employeeResponse.DName = _department.DName;
+                    employeeResponse.MName = _mode.Value;
+                    employeeResponse.Path = path;
+
+                    return new HandlerResult<EmployeeResponse>().Successed(Constant.Message.UPDATE_SUCCESSES, employeeResponse);
                 }
 
                 return new HandlerResult<EmployeeResponse>().Failed(Constant.Message.FAILURE);

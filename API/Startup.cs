@@ -11,6 +11,8 @@ using API.Extensions.ServiceExtensions;
 using API.Extensions.AppExtensions;
 using Persistence;
 using Application.Features.Employee.Handlers.Get;
+using System.Reflection;
+using System;
 
 namespace API
 {
@@ -53,6 +55,12 @@ namespace API
 
             // register signalR
             services.AddSignalR();
+
+            // register automapper
+            services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
+            // kiểm tra sức khỏe cho project
+            services.AddHealthChecks();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

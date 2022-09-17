@@ -1,6 +1,7 @@
 ﻿using Application.DTOs.EmployeeDto;
 using Application.DTOs.ResultDto;
 using Application.Features.Employee.Queries;
+using AutoMapper;
 using Domain.Entities;
 using Domain.IRepositories;
 using MediatR;
@@ -15,26 +16,23 @@ namespace Application.Features.Employee.Handlers.Get
 {
     public class GetListEmployeeHandler : IRequestHandler<GetListEmployeeQuery, HandlerResult<List<EmployeeResponse>>>
     {
-        private readonly UserManager<AppUsers> _userManager;
-        private readonly RoleManager<AppRoles> _roleManager;
-        private readonly IConfiguration _configuration;
         private readonly IEmployeeRepository _employeeRepository;
         private readonly IModeRepository _modeRepository;
         private readonly IRoleModeRepository _roleModeRepository;
         private readonly IDepartmentRepository _departmentRepository;
         private readonly ITitleNameRepository _titleNameRepository;
+        private readonly IMapper _mapper;
 
         public GetListEmployeeHandler(ITitleNameRepository titleNameRepository, IDepartmentRepository departmentRepository,
-            IRoleModeRepository roleModeRepository, IModeRepository modeRepository, RoleManager<AppRoles> roleManager, UserManager<AppUsers> userManager, IConfiguration configuration, IEmployeeRepository employeeRepository)
+                                    IRoleModeRepository roleModeRepository, IModeRepository modeRepository, 
+                                    IEmployeeRepository employeeRepository, IMapper mapper)
         {
             _employeeRepository = employeeRepository;
-            _configuration = configuration;
-            _userManager = userManager;
-            _roleManager = roleManager;
             _modeRepository = modeRepository;
             _roleModeRepository = roleModeRepository;
             _departmentRepository = departmentRepository;
             _titleNameRepository = titleNameRepository;
+            _mapper = mapper;
         }
 
         public async Task<HandlerResult<List<EmployeeResponse>>> Handle(GetListEmployeeQuery request, CancellationToken cancellationToken)
@@ -118,20 +116,12 @@ namespace Application.Features.Employee.Handlers.Get
                 var _title = await _titleNameRepository.GetByIdAsync(person.TitleId);
                 var _mode = await _modeRepository.GetByIdAsync(person.ModeId);
 
-                results.Add(
-                    new EmployeeResponse
-                    {
-                        Id = person.Id,
-                        FullName = person.FullName,
-                        DoB = person.DoB,
-                        PoB = person.PoB,
-                        PhoneNumber = person.PhoneNumber,
-                        Email = person.Email,
-                        TName = _title.TName,
-                        DName = _department.DName,
-                        MName = _mode.Value,
-                        Path = person.ImagePath
-                    });
+                var employResponse = _mapper.Map<EmployeeResponse>(person);
+                employResponse.TName = _title.TName;
+                employResponse.DName = _department.DName;
+                employResponse.MName = _mode.Value;
+
+                results.Add(employResponse);
             }
 
             return new HandlerResult<List<EmployeeResponse>>()

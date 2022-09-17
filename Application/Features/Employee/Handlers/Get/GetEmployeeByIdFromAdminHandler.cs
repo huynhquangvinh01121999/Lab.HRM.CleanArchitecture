@@ -1,6 +1,7 @@
 ﻿using Application.DTOs.EmployeeDto;
 using Application.DTOs.ResultDto;
 using Application.Features.Employee.Queries;
+using AutoMapper;
 using Domain.IRepositories;
 using MediatR;
 using System.Threading;
@@ -15,14 +16,16 @@ namespace Application.Features.Employee.Handlers.Get
         private readonly IModeRepository _modeRepository;
         private readonly IDepartmentRepository _departmentRepository;
         private readonly ITitleNameRepository _titleNameRepository;
+        private readonly IMapper _mapper;
 
         public GetEmployeeByIdFromAdminHandler(IEmployeeRepository employeeRepository, IModeRepository modeRepository,
-            IDepartmentRepository departmentRepository, ITitleNameRepository titleNameRepository)
+            IDepartmentRepository departmentRepository, ITitleNameRepository titleNameRepository, IMapper mapper)
         {
             _employeeRepository = employeeRepository;
             _modeRepository = modeRepository;
             _departmentRepository = departmentRepository;
             _titleNameRepository = titleNameRepository;
+            _mapper = mapper;
         }
 
         public async Task<HandlerResult<EmployeeResponse>> Handle(GetEmployeeByIdFromAdminQuery request, CancellationToken cancellationToken)
@@ -35,20 +38,12 @@ namespace Application.Features.Employee.Handlers.Get
             var _title = await _titleNameRepository.GetByIdAsync(employee.TitleId);
             var _mode = await _modeRepository.GetByIdAsync(employee.ModeId);
 
-            return new HandlerResult<EmployeeResponse>().Successed(Constant.Message.FETCHING_DATA_SUCCESSES,
-                new EmployeeResponse
-                {
-                    Id = employee.Id,
-                    FullName = employee.FullName,
-                    DoB = employee.DoB,
-                    PoB = employee.PoB,
-                    Email = employee.Email,
-                    PhoneNumber = employee.PhoneNumber,
-                    TName = _title.TName,
-                    DName = _department.DName,
-                    MName = _mode.MName,
-                    Path = employee.ImagePath
-                });
+            var employResponse = _mapper.Map<EmployeeResponse>(employee);
+            employResponse.TName = _title.TName;
+            employResponse.DName = _department.DName;
+            employResponse.MName = _mode.Value;
+
+            return new HandlerResult<EmployeeResponse>().Successed(Constant.Message.FETCHING_DATA_SUCCESSES, employResponse);
         }
     }
 }

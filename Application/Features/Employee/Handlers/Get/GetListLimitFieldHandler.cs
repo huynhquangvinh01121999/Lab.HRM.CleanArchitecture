@@ -1,6 +1,7 @@
 ﻿using Application.DTOs.EmployeeDto;
 using Application.DTOs.ResultDto;
 using Application.Features.Employee.Queries;
+using AutoMapper;
 using Domain.Entities;
 using Domain.IRepositories;
 using MediatR;
@@ -23,9 +24,13 @@ namespace Application.Features.Employee.Handlers.Get
         private readonly IRoleModeRepository _roleModeRepository;
         private readonly IDepartmentRepository _departmentRepository;
         private readonly ITitleNameRepository _titleNameRepository;
+        private readonly IMapper _mapper;
 
         public GetListLimitFieldHandler(ITitleNameRepository titleNameRepository, IDepartmentRepository departmentRepository,
-            IRoleModeRepository roleModeRepository, IModeRepository modeRepository, RoleManager<AppRoles> roleManager, UserManager<AppUsers> userManager, IConfiguration configuration, IEmployeeRepository employeeRepository)
+                                        IRoleModeRepository roleModeRepository, IModeRepository modeRepository, 
+                                        RoleManager<AppRoles> roleManager, UserManager<AppUsers> userManager, 
+                                        IConfiguration configuration, IEmployeeRepository employeeRepository, 
+                                        IMapper mapper)
         {
             _employeeRepository = employeeRepository;
             _configuration = configuration;
@@ -35,6 +40,7 @@ namespace Application.Features.Employee.Handlers.Get
             _roleModeRepository = roleModeRepository;
             _departmentRepository = departmentRepository;
             _titleNameRepository = titleNameRepository;
+            _mapper = mapper;
         }
 
         public async Task<HandlerResult<List<EmployeeLimitResponse>>> Handle(GetListLimitFieldQuery request, CancellationToken cancellationToken)
@@ -115,17 +121,12 @@ namespace Application.Features.Employee.Handlers.Get
                 var _title = await _titleNameRepository.GetByIdAsync(person.TitleId);
                 var _mode = await _modeRepository.GetByIdAsync(person.ModeId);
 
-                results.Add(
-                    new EmployeeLimitResponse
-                    {
-                        Id = person.Id,
-                        FullName = person.FullName,
-                        DoB = person.DoB,
-                        Email = person.Email,
-                        TName = _title.TName,
-                        DName = _department.DName,
-                        MName = _mode.Value
-                    });
+                var employLimitResponse = _mapper.Map<EmployeeLimitResponse>(person);
+                employLimitResponse.TName = _title.TName;
+                employLimitResponse.DName = _department.DName;
+                employLimitResponse.MName = _mode.Value;
+
+                results.Add(employLimitResponse);
             }
 
             return new HandlerResult<List<EmployeeLimitResponse>>()
