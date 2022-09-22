@@ -40,6 +40,10 @@ namespace Application.Features.Users.Handlers.Create
             if (!await _userManager.CheckPasswordAsync(user, request.Password))
                 return new HandlerResult<LoginResponse>().Failed(Constant.Message.PWD_NOT_CORRECT);
 
+            //----------------------- token handler ----------------------------
+            // lấy ra các claims
+            var userClaims = await _userManager.GetClaimsAsync(user);
+
             // lấy ra các quyền của user
             var userRoles = await _userManager.GetRolesAsync(user);
 
