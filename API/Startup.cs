@@ -9,10 +9,9 @@ using Microsoft.Extensions.Hosting;
 using API.Middleware;
 using API.Extensions.ServiceExtensions;
 using API.Extensions.AppExtensions;
-using Persistence;
-using Application.Features.Employee.Handlers.Get;
-using System.Reflection;
 using System;
+using Persistence.Contexts;
+using Application.Features.Employee.Queries.GetListEmployees;
 
 namespace API
 {

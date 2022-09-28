@@ -1,8 +1,12 @@
 ﻿using Application.DTOs.EmployeeDto;
-using Application.Features.Employee.Commands.Create;
-using Application.Features.Employee.Commands.Delete;
-using Application.Features.Employee.Commands.Update;
-using Application.Features.Employee.Queries;
+using Application.Features.Employee.Commands.CreateEmployees;
+using Application.Features.Employee.Commands.DeleteEmployees;
+using Application.Features.Employee.Commands.UpdateImageEmployee;
+using Application.Features.Employee.Commands.UpdateInfoEmployee;
+using Application.Features.Employee.Queries.GetEmployeeById;
+using Application.Features.Employee.Queries.GetEmployeeByIdFromAdmin;
+using Application.Features.Employee.Queries.GetListEmployeeLimitField;
+using Application.Features.Employee.Queries.GetListEmployees;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -75,12 +79,12 @@ namespace API.Controllers
             //    return BadRequest(messages);
             //}
 
-            return Ok(await Mediator.Send(new CreateNewEmployee { Image = file, EmployeeInfo = request}));
+            return Ok(await Mediator.Send(new CreateNewEmployeeCommand { Image = file, EmployeeInfo = request}));
         }
 
         [HttpPut("updateImage/{id}")]
         [Authorize(Roles = Constant.RoleValue.Admin)]
-        public async Task<IActionResult> Update(int id, [FromForm] UpdateImageEmployee command)
+        public async Task<IActionResult> Update(int id, [FromForm] UpdateImageEmployeeCommand command)
         {
             command.Id = id;
 
@@ -89,7 +93,7 @@ namespace API.Controllers
 
         [HttpPut("updateInfo/{id}")]
         [Authorize(Roles = Constant.RoleValue.Admin)]
-        public async Task<IActionResult> Update(int id, [FromForm] UpdateInfoEmployee command)
+        public async Task<IActionResult> Update(int id, [FromForm] UpdateInfoEmployeeCommand command)
         {
             command.Id = id;
 
@@ -100,7 +104,7 @@ namespace API.Controllers
         [Authorize(Roles = Constant.RoleValue.Admin)]
         public async Task<IActionResult> Delete(int id)
         {
-            return Ok(await Mediator.Send(new DeleteEmployee { Id = id }));
+            return Ok(await Mediator.Send(new DeleteEmployeeCommand { Id = id }));
         }
     }
 }

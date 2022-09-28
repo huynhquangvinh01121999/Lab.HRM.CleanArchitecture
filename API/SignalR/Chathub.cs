@@ -1,6 +1,7 @@
 ﻿using API.SignalR.Clients;
-using Application.Features.Notifications.Commands.Create;
+using Application.Features.Notifications.Commands.CreatePushNotify;
 using Application.Features.Notifications.Queries;
+using Application.Features.Notifications.Queries.GetListNotifiesByUserId;
 using MediatR;
 using Microsoft.AspNetCore.SignalR;
 using System;
@@ -23,7 +24,7 @@ namespace API.SignalR
         //    await Clients.All.SendAsync("ReceiveNotification", command);
         //}
 
-        public async Task SendNotification(PushNotify message)
+        public async Task SendNotification(PushNotifyCommand message)
         {
             await _mediator.Send(message);
             await Clients.All.ReceiveNotification(message);
@@ -31,7 +32,7 @@ namespace API.SignalR
 
         public async Task CheckNewNotify(Guid userId)
         {
-            var result = await _mediator.Send(new GetListNotifyByUserId { UserId = userId});
+            var result = await _mediator.Send(new GetListNotifyByUserIdQuery { UserId = userId});
             await Clients.All.HasBeenCheckedNewNotify(result.Data);
         }
     }

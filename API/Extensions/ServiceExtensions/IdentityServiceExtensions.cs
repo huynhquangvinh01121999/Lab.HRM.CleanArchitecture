@@ -1,7 +1,7 @@
 ﻿using Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
-using Persistence;
+using Persistence.Contexts;
 
 namespace API.Extensions.ServiceExtensions
 {

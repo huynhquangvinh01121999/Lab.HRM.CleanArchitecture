@@ -1,5 +1,6 @@
-﻿using Application.Features.Notifications.Commands.Create;
-using Application.Features.Notifications.Queries;
+﻿using Application.Features.Notifications.Commands.CreatePushNotify;
+using Application.Features.Notifications.Queries.GetListNotifies;
+using Application.Features.Notifications.Queries.GetListNotifiesByUserId;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -14,19 +15,19 @@ namespace API.Controllers
         [Authorize]
         public async Task<IActionResult> GetAllNotifies()
         {
-            return Ok(await Mediator.Send(new GetListNotify()));
+            return Ok(await Mediator.Send(new GetListNotifyQuery()));
         }
 
         [HttpGet("getByUserId")]
         [Authorize]
         public async Task<IActionResult> GetByUserId(Guid userId)
         {
-            return Ok(await Mediator.Send(new GetListNotifyByUserId { UserId = userId }));
+            return Ok(await Mediator.Send(new GetListNotifyByUserIdQuery { UserId = userId }));
         }
 
         [HttpPost("createNew")]
         [Authorize]
-        public async Task<IActionResult> CreateNotification([FromBody] PushNotify command)
+        public async Task<IActionResult> CreateNotification([FromBody] PushNotifyCommand command)
         {
             return Ok(await Mediator.Send(command));
         }

@@ -1,7 +1,6 @@
 ﻿using Application.DTOs.AuthenticateDto;
 using Application.DTOs.EmployeeDto;
-using Application.Features.Employee.Commands.Create;
-using Application.Features.Notifications.Commands.Create;
+using Application.Features.Notifications.Commands.CreatePushNotify;
 using AutoMapper;
 using Domain.Entities;
 
@@ -21,7 +20,7 @@ namespace Application.Mappings
 
             CreateMap<EmployeeRequest, Employees>();
 
-            CreateMap<PushNotify, Notify>();
+            CreateMap<PushNotifyCommand, Notify>();
         }
     }
 }

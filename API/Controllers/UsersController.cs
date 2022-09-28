@@ -1,5 +1,7 @@
-﻿using Application.Features.Users.Commands.Create;
-using MediatR;
+﻿using Application.Features.Users.Commands.Authenticate;
+using Application.Features.Users.Commands.RegisterAdmin;
+using Application.Features.Users.Commands.RegisterCommon;
+using Application.Features.Users.Commands.RegisterUser;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 
@@ -18,7 +20,7 @@ namespace API.Controllers
         }
 
         [HttpPost("registerCommon")]
-        public async Task<IActionResult> Register([FromBody] RegisterCommand command)
+        public async Task<IActionResult> Register([FromBody] RegisterCommonCommand command)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
