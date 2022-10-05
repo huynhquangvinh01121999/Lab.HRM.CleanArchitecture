@@ -1,48 +1,121 @@
 ﻿using Application.DTOs.EmployeeDto;
 using Application.DTOs.ResultDto;
+using AutoMapper;
+using Domain.IRepositories;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
+using Utilities.Helpers;
 
 namespace Application.Features.Employee.Commands.UpdateInfoEmployee
 {
     public class UpdateInfoEmployeeCommand : IRequest<HandlerResult<EmployeeResponse>>
     {
-        [Required(ErrorMessage = "Id is required")]
         public int Id { get; set; }
-
-        [Required(ErrorMessage = "FullName is required")]
         public string FullName { get; set; }
-
-
-        [Required(ErrorMessage = "DoB is required")]
         public DateTime DoB { get; set; }
-
         public string PoB { get; set; }
-
-
-        [Required(ErrorMessage = "Email is required")]
         public string Email { get; set; }
-
-
-        [Required(ErrorMessage = "PhoneNumber is required")]
         public string PhoneNumber { get; set; }
-
-
-        [Required(ErrorMessage = "Image is required")]
         public IFormFile Image { get; set; }
-
-
-        [Required(ErrorMessage = "TID is required")]
         public int TID { get; set; }
-
-
-        [Required(ErrorMessage = "DID is required")]
         public int DID { get; set; }
-
-
-        [Required(ErrorMessage = "MID is required")]
         public int MID { get; set; }
+    }
+
+    public class UpdateInfoEmployeeCommandHandler : IRequestHandler<UpdateInfoEmployeeCommand, HandlerResult<EmployeeResponse>>
+    {
+        private readonly IEmployeeRepository _employeeRepository;
+        private readonly IModeRepository _modeRepository;
+        private readonly IDepartmentRepository _departmentRepository;
+        private readonly ITitleNameRepository _titleNameRepository;
+        private readonly IMapper _mapper;
+
+        public UpdateInfoEmployeeCommandHandler(IEmployeeRepository employeeRepository, IModeRepository modeRepository, IDepartmentRepository departmentRepository, ITitleNameRepository titleNameRepository, IMapper mapper)
+        {
+            _employeeRepository = employeeRepository;
+            _modeRepository = modeRepository;
+            _departmentRepository = departmentRepository;
+            _titleNameRepository = titleNameRepository;
+            _mapper = mapper;
+        }
+
+        public async Task<HandlerResult<EmployeeResponse>> Handle(UpdateInfoEmployeeCommand request, CancellationToken cancellationToken)
+        {
+            var isValidREquest = UpdateInfoEmployeeValidator.ValidUpdateInfoEmployeeRequest(request);
+            if (!isValidREquest.isValid)
+                return new HandlerResult<EmployeeResponse>().Failed(isValidREquest.Message);
+
+            var employee = await _employeeRepository.GetByIdAsync(request.Id);
+
+            if (employee == null)
+                return new HandlerResult<EmployeeResponse>().Failed(Constant.Message.NOTFOUND);
+
+            // validation
+            var isPhoneNumber = RegexHandle.IsPhoneNumber(request.PhoneNumber);
+            if (!isPhoneNumber)
+                return new HandlerResult<EmployeeResponse>().Failed("Invalid phone number!");
+
+            var isEmail = RegexHandle.IsEmail(request.Email);
+            if (!isEmail)
+                return new HandlerResult<EmployeeResponse>().Failed("Invalid email!");
+
+            try
+            {
+                string srcDestination = Constant.Path.ImageSavePath;
+                string[] fileNameSplit = request.Image.FileName.Trim().Split(".");
+                string fileName = null;
+                for (var i = 0; i < fileNameSplit.Length - 1; i++)
+                {
+                    fileName += fileNameSplit[i];
+                }
+                string fileExtension = fileNameSplit[fileNameSplit.Length - 1];
+                string path = Path.Combine(srcDestination, fileName + DateTime.Now.ToString("yyyyMMddhhmmss") + "." + fileExtension);
+                using (Stream stream = new FileStream(path, FileMode.Create))
+                {
+                    request.Image.CopyTo(stream);
+                }
+
+                // mapping
+                employee.FullName = request.FullName;
+                employee.DoB = request.DoB;
+                employee.PoB = request.PoB;
+                employee.Email = request.Email;
+                employee.PhoneNumber = request.PhoneNumber;
+                employee.ImagePath = path;
+                employee.TitleId = request.TID;
+                employee.DepartmentId = request.DID;
+                employee.ModeId = request.MID;
+
+
+                var result = await _employeeRepository.UpdateAsync(employee);
+
+                if (result != null)
+                {
+                    var _department = await _departmentRepository.GetByIdAsync(employee.DepartmentId);
+                    var _title = await _titleNameRepository.GetByIdAsync(employee.TitleId);
+                    var _mode = await _modeRepository.GetByIdAsync(employee.ModeId);
+
+                    // mapper from entity to response model
+                    var employeeResponse = _mapper.Map<EmployeeResponse>(employee);
+                    employeeResponse.TName = _title.TName;
+                    employeeResponse.DName = _department.DName;
+                    employeeResponse.MName = _mode.Value;
+                    employeeResponse.Path = path;
+
+                    return new HandlerResult<EmployeeResponse>().Successed(Constant.Message.UPDATE_SUCCESSES, employeeResponse);
+                }
+
+                return new HandlerResult<EmployeeResponse>().Failed(Constant.Message.FAILURE);
+            }
+            catch (Exception ex)
+            {
+                return new HandlerResult<EmployeeResponse>().Failed(Constant.Message.EXCEPTIONS + ex.Message);
+            }
+        }
     }
 }

@@ -1,66 +1,42 @@
-﻿using Application.DTOs.ResultDto;
-using Utilities.Helpers;
+﻿using FluentValidation;
 
 namespace Application.Features.Employee.Commands.CreateEmployees
 {
-    public class CreateNewEmployeeValidator
+    public class CreateNewEmployeeValidator : AbstractValidator<CreateNewEmployeeCommand>
     {
-        public static ValidRequestResult ValidCreateNewEmployeeRequest(CreateNewEmployeeCommand request)
+        public CreateNewEmployeeValidator()
         {
-            string message = "";
-            bool flag = true;
-            if (string.IsNullOrEmpty(request.EmployeeInfo.FullName))
-            {
-                flag = false;
-                message += "FullName is required, ";
-            }
+            RuleFor(p => p.Image)
+               .NotEmpty().WithMessage("{PropertyName} is required.")
+               .NotNull()
+               .NotEmpty();
 
-            if (string.IsNullOrEmpty(request.EmployeeInfo.DoB.ToString()) || Validations.IsDateTimeNullorEmpty(request.EmployeeInfo.DoB))
-            {
-                flag = false;
-                message += "DoB is required, ";
-            }
+            RuleFor(p => p.EmployeeInfo.DoB)
+               .NotEmpty().WithMessage("{PropertyName} is required.")
+               .NotNull()
+               .NotEmpty();
 
-            if (string.IsNullOrEmpty(request.EmployeeInfo.Email))
-            {
-                flag = false;
-                message += "Email is required, ";
-            }
+            RuleFor(p => p.EmployeeInfo.Email)
+               .NotEmpty().WithMessage("{PropertyName} is required.")
+               .NotNull()
+               .NotEmpty()
+               .Matches(@"^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$");
 
-            if (string.IsNullOrEmpty(request.EmployeeInfo.PhoneNumber))
-            {
-                flag = false;
-                message += "PhoneNumber is required, ";
-            }
+            RuleFor(p => p.EmployeeInfo.FullName)
+               .NotEmpty().WithMessage("{PropertyName} is required.")
+               .NotNull()
+               .NotEmpty();
 
-            if (request.Image == null)
-            {
-                flag = false;
-                message += "Image is required";
-            }
+            RuleFor(p => p.EmployeeInfo.ModeId)
+               .NotEmpty().WithMessage("{PropertyName} is required.")
+               .NotNull()
+               .NotEmpty();
 
-            if (string.IsNullOrEmpty(request.EmployeeInfo.TitleId.ToString()))
-            {
-                flag = false;
-                message += "TitleId is required";
-            }
-
-            if (string.IsNullOrEmpty(request.EmployeeInfo.DepartmentId.ToString()))
-            {
-                flag = false;
-                message += "DepartmentId is required";
-            }
-
-            if (string.IsNullOrEmpty(request.EmployeeInfo.ModeId.ToString()))
-            {
-                flag = false;
-                message += "ModeId is required";
-            }
-
-            if (flag == false)
-                return new ValidRequestResult { isValid = flag, Message = message };
-
-            return new ValidRequestResult { isValid = flag, Message = "" };
+            RuleFor(p => p.EmployeeInfo.PhoneNumber)
+               .NotEmpty().WithMessage("{PropertyName} is required.")
+               .NotNull()
+               .NotEmpty()
+               .Matches(@"(84|0[3|5|7|8|9])+([0-9]{8})\b");
         }
     }
 }
