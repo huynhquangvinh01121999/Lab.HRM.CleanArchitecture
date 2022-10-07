@@ -1,17 +1,18 @@
 ﻿using API.SignalR;
-using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using API.Middleware;
 using API.Extensions.ServiceExtensions;
-using API.Extensions.AppExtensions;
-using System;
+using API.Extensions.ApplicationBuilderExtensions;
 using Persistence.Contexts;
+using Microsoft.EntityFrameworkCore;
 using Application.Features.Employee.Queries.GetListEmployees;
+using MediatR;
+using System;
+using System.Reflection;
 
 namespace API
 {
@@ -46,17 +47,13 @@ namespace API
             // register Authentication service
             services.AddAuthenticateServiceExtensions(_configuration);
 
-            // register mediatR service
-            services.AddMediatR(typeof(GetListEmployeeHandler).Assembly);
-
             // register DI
             services.AddDependencyInjectionExtensions();
 
+            services.AddApplicationLayerExtension();
+
             // register signalR
             services.AddSignalR();
-
-            // register automapper
-            services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
             // kiểm tra sức khỏe cho project
             services.AddHealthChecks();

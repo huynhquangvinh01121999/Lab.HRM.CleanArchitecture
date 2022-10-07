@@ -23,20 +23,12 @@ namespace Application.Features.Employee.Commands.CreateEmployees
     public class CreateNewEmployeeCommandHandler : IRequestHandler<CreateNewEmployeeCommand, HandlerResult<EmployeeResponse>>
     {
         private readonly IEmployeeRepository _employeeRepository;
-        private readonly IModeRepository _modeRepository;
-        private readonly IDepartmentRepository _departmentRepository;
-        private readonly ITitleNameRepository _titleNameRepository;
         private readonly IConfiguration _configuration;
         private readonly IMapper _mapper;
 
-        public CreateNewEmployeeCommandHandler(IEmployeeRepository employeeRepository, IModeRepository modeRepository,
-                                        IDepartmentRepository departmentRepository, ITitleNameRepository titleNameRepository,
-                                        IConfiguration configuration, IMapper mapper)
+        public CreateNewEmployeeCommandHandler(IEmployeeRepository employeeRepository, IConfiguration configuration, IMapper mapper)
         {
             _employeeRepository = employeeRepository;
-            _modeRepository = modeRepository;
-            _departmentRepository = departmentRepository;
-            _titleNameRepository = titleNameRepository;
             _configuration = configuration;
             _mapper = mapper;
         }
@@ -78,15 +70,10 @@ namespace Application.Features.Employee.Commands.CreateEmployees
 
                 if (result != null)
                 {
-                    var department = await _departmentRepository.GetByIdAsync(employee.DepartmentId);
-                    var title = await _titleNameRepository.GetByIdAsync(employee.TitleId);
-                    var mode = await _modeRepository.GetByIdAsync(employee.ModeId);
+                    var newEmployee = await _employeeRepository.GetLastEmployee();
 
                     // mapper from entity to response model
-                    var employeeResponse = _mapper.Map<EmployeeResponse>(employee);
-                    employeeResponse.TName = title.TName;
-                    employeeResponse.DName = department.DName;
-                    employeeResponse.MName = mode.Value;
+                    var employeeResponse = _mapper.Map<EmployeeResponse>(newEmployee);
 
                     return new HandlerResult<EmployeeResponse>().Successed(Constant.Message.CREATED_SUCCESSES, employeeResponse);
                 }

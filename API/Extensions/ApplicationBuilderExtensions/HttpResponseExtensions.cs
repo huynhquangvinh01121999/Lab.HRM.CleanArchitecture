@@ -5,7 +5,7 @@ using System.Net;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace API.Extensions.AppExtensions
+namespace API.Extensions.ApplicationBuilderExtensions
 {
     public static class HttpResponseExtensions
     {

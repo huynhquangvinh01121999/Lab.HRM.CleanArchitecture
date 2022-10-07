@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Net.Http.Headers;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Utilities.Helpers;
 
@@ -60,7 +61,7 @@ namespace API.Controllers
         }
 
         [HttpPost("createNew")]
-        [Authorize(Roles = Constant.RoleValue.Admin)]
+        //[Authorize(Roles = Constant.RoleValue.Admin)]
         public async Task<IActionResult> Create([FromQuery] EmployeeRequest request, IFormFile file)
         {
             //if (!ModelState.IsValid)
@@ -105,6 +106,16 @@ namespace API.Controllers
         public async Task<IActionResult> Delete(int id)
         {
             return Ok(await Mediator.Send(new DeleteEmployeeCommand { Id = id }));
+        }
+
+        [HttpGet("GetValueFromJwt")]
+        [Authorize(Roles = "User, Admin")]
+        public IActionResult Test()
+        {
+            ClaimsPrincipal currentUser = this.User;
+            var name = currentUser.FindFirst(ClaimTypes.Name).Value;
+
+            return Ok(new { userName = name });
         }
     }
 }
