@@ -14,7 +14,7 @@ namespace API.Extensions.ServiceExtensions
         public static IServiceCollection AddApplicationLayerExtension(this IServiceCollection services)
         {
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
-            services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+            services.AddValidatorsFromAssembly(typeof(CreateNewEmployeeCommandValidator).Assembly);
             services.AddMediatR(typeof(GetListEmployeeHandler).Assembly);
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 

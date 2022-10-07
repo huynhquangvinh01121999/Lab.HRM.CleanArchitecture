@@ -102,7 +102,7 @@ namespace API.Controllers
         }
 
         [HttpDelete("removeById")]
-        [Authorize(Roles = Constant.RoleValue.Admin)]
+        //[Authorize(Roles = Constant.RoleValue.Admin)]
         public async Task<IActionResult> Delete(int id)
         {
             return Ok(await Mediator.Send(new DeleteEmployeeCommand { Id = id }));

@@ -2,16 +2,16 @@
 using System;
 using System.Collections.Generic;
 
-namespace Application.Exceptions
+namespace Application.Exceptions.v2
 {
-    public class ValidationException : Exception
+    public class ValidationFailureException : Exception
     {
-        public ValidationException() : base("One or more validation failures have occurred.")
+        public ValidationFailureException() : base("One or more validation failures have occurred.")
         {
             Errors = new List<string>();
         }
         public List<string> Errors { get; }
-        public ValidationException(IEnumerable<ValidationFailure> failures)
+        public ValidationFailureException(IEnumerable<ValidationFailure> failures)
             : this()
         {
             foreach (var failure in failures)

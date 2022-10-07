@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace API.Middleware.Exceptions
+namespace Application.Exceptions.v2
 {
     public class ValidationErrorException : Exception
     {

@@ -2,9 +2,9 @@
 
 namespace Application.Features.Employee.Commands.CreateEmployees
 {
-    public class CreateNewEmployeeValidator : AbstractValidator<CreateNewEmployeeCommand>
+    public class CreateNewEmployeeCommandValidator : AbstractValidator<CreateNewEmployeeCommand>
     {
-        public CreateNewEmployeeValidator()
+        public CreateNewEmployeeCommandValidator()
         {
             RuleFor(p => p.Image).SetValidator(new FileValidator());
 

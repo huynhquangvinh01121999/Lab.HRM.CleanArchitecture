@@ -1,6 +1,5 @@
-﻿using Application.Behaviours;
-using Application.DTOs.ResultDto;
-using Application.Exceptions.v2;
+﻿using Application.DTOs.ResultDto;
+using Application.Exceptions.v1;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -11,11 +10,11 @@ using System.Threading.Tasks;
 
 namespace API.Middleware
 {
-    public class ExceptionMiddleware
+    public class ErrorHandlerMiddleware
     {
         private readonly RequestDelegate _next;
 
-        public ExceptionMiddleware(RequestDelegate next)
+        public ErrorHandlerMiddleware(RequestDelegate next)
         {
             _next = next;
         }
@@ -34,16 +33,11 @@ namespace API.Middleware
 
                 switch (error)
                 {
-                    case AppException e:
+                    case ApiException e:
                         // custom application error
                         response.StatusCode = (int)HttpStatusCode.BadRequest;
                         break;
-                    case ValidationErrorException e:
-                        // custom application error
-                        response.StatusCode = (int)HttpStatusCode.BadRequest;
-                        responseModel.Errors = e.Errors;
-                        break;
-                    case ValidationFailureException e:
+                    case FluentValidationException e:
                         // custom application error
                         response.StatusCode = (int)HttpStatusCode.BadRequest;
                         responseModel.Errors = e.Errors;
@@ -57,10 +51,10 @@ namespace API.Middleware
                         response.StatusCode = (int)HttpStatusCode.InternalServerError;
                         responseModel.Errors = new List<string>() { e.InnerException.Message };
                         break;
+
                     default:
                         // unhandled error
                         response.StatusCode = (int)HttpStatusCode.InternalServerError;
-                        responseModel.Errors = new List<string>() { error.Message };
                         break;
                 }
                 var result = JsonSerializer.Serialize(responseModel);
@@ -69,5 +63,4 @@ namespace API.Middleware
             }
         }
     }
-
 }

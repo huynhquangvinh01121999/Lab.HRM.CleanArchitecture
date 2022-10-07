@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Globalization;
 
-namespace API.Middleware.Exceptions
+namespace Application.Exceptions.v2
 {
     public class AppException : Exception
     {

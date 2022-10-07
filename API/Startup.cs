@@ -72,19 +72,19 @@ namespace API
                 });
             }
 
+            app.UseCors("CorsPolicy");
+
             app.UseHttpsRedirection();
 
             app.UseRouting();
-
-            app.UseCors("CorsPolicy");
-
-            app.UseHttpResponseExtensions();
 
             app.UseAuthentication();
 
             app.UseAuthorization();
 
-            app.UseMiddleware<ExceptionMiddleware>();
+            //app.UseHttpResponseExtensions();
+
+            app.UseMiddleware<ErrorHandlerMiddleware>();
 
             app.UseEndpoints(endpoints =>
             {
